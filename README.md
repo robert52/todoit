@@ -1,1 +1,1 @@
-# Node test app
+# Todoit - simple cooperative task manager
