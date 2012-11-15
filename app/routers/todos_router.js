@@ -1,4 +1,4 @@
-var TodosRouter = function(app, resourceful, plates, config) {
+var TodosRouter = function(app, resourceful) {
 	var resources = resourceful.resources,
 		Todo = resources.Todo,
 		api = app.config.get('api-url');

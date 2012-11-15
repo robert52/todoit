@@ -2,38 +2,35 @@
 <html>
 	<head>
 		<meta charset='UTF-8' />
-		<meta name="description" content="Client Manager - sample Backbone&Node application">
-  		<meta name="author" content="Robert Onodi">
-		<title>Todo app</title>
+		<title>Login page</title>
 		<link rel="stylesheet" href="css/bootstrap.css" />
-		<link rel="stylesheet" href="css/m-styles.min.css" />
+		<link rel="stylesheet" href="css/bootstrap-responsive.css" />
 		<link rel="stylesheet" href="css/style.css" />
 	</head>
 	<body>
-		<div id='app'>
-			<div class='navbar navbar-inverse navbar-fixed-top'>
-				<div class='navbar-inner'>
-					<div class="container">
-						<a class='brand' href="#">Todos</a>
-						<ul class='nav'>
-						</ul>
-					</div>
-				</div>
-			</div>
-			
-			<header id='header'>
-			</header>
-			
-			<div class='container'>
-				
-				<section class='page-content'></section>
-			
-			</div>
-			
-			<footer id='footer'>
-			</footer>
-		</div>
-		<!-- Loading The Javascripts AMD Style using Require.js -->
-    	<script data-main="js/main" src="js/require.js"></script>
+		<div class="container" action='/login' method='post'>
+			<form class="form-horizontal">
+			  <div class="control-group">
+			    <label class="control-label" for="inputEmail">Email</label>
+			    <div class="controls">
+			      <input type="text" id="inputEmail" placeholder="Email">
+			    </div>
+			  </div>
+			  <div class="control-group">
+			    <label class="control-label" for="inputPassword">Password</label>
+			    <div class="controls">
+			      <input type="password" id="inputPassword" placeholder="Password">
+			    </div>
+			  </div>
+			  <div class="control-group">
+			    <div class="controls">
+<!-- 			      <label class="checkbox">
+			        <input type="checkbox"> Remember me
+			      </label> -->
+			      <button type="submit" class="btn btn-success">Sign in</button>
+			    </div>
+			  </div>
+			</form>
+	    </div>		
 	</body>
 </html>
