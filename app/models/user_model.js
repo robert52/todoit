@@ -1,23 +1,23 @@
 var crypto = require('crypto'),
-    /**
-     * Creates a salt
-     *
-     */
-    makeSalt = function() {
-      return Math.round((new Date().valueOf() * Math.random())) + 'super!2#4secret';
-    },
-    /**
-     * Hashes a password string
-     *
-     * sha1 is used for hashing with a salt output will be in hexa
-     *
-     * @param {String} password
-     * @param {String} salt
-     * @return {String} hashed_password hex format
-     */
-    encryptPassword = function(password, salt) {
-      return crypto.createHmac('sha1', salt).update(password).digest('hex');
-    };
+/**
+ * Creates a salt
+ *
+ */
+makeSalt = function() {
+  return Math.round((new Date().valueOf() * Math.random())) + 'super!2#4secret';
+},
+/**
+ * Hashes a password string
+ *
+ * sha1 is used for hashing with a salt output will be in hexa
+ *
+ * @param {String} password
+ * @param {String} salt
+ * @return {String} hashed_password hex format
+ */
+hashPassword = function(password, salt) {
+  return crypto.createHmac('sha1', salt).update(password).digest('hex');
+};
 /**
  * User Model component
  *
@@ -37,57 +37,31 @@ var UserModel = function(resourceful) {
     required : true,
     unique : true
   });
+  User.string('password', {
+    required : true,
+    restricted : true
+  });
   User.string('password_salt', {
     restricted : true
   });
-  User.string('password', {
-    required : true,
-    restricted : true,
-    minLength : 7
-  });
-  /**
-   * Define a setter for the password property
-   *
-   * in case the password is set it will be automatically hashed
-   * TODO: this is not working password is hashed everytime it is set
-   */
-  // User.property('password', 'string', {
-  // set: function(value) {
-  // console.log('#setter');
-  // if (typeof value !== 'undefined' && value !== null) {
-  // this.password_salt = makeSalt();
-  // value = encryptPassword(value, this.password_salt);
-  // }
-  //
-  // return value;
-  // },
-  // required: true,
-  // restricted: true
-  // });
-  /**
-   * Hash the user's password
-   *
-   * @param {String} password
-   * @param {String} salt
-   * @param {Function} callback
-   * @return {String} hashed-password
-   */
+
   User.method('hashPassword', function(password, callback) {
     var salt = makeSalt();
-    var hash = encryptPassword(password, salt);
+    var hashedPassword = hashPassword(password, salt);
 
     if (callback)
-      callback(hash, salt);
+      callback(hashedPassword, salt);
 
-    return hash;
+    return hashedPassword;
   }, {
     properties : {
       'password' : {
         'type' : 'string',
-        'required' : true
+        required : true
       }
     }
   });
+
   /**
    * Finds a user by it's email and password
    *
@@ -96,20 +70,27 @@ var UserModel = function(resourceful) {
    * @param {Function} callback
    */
   User.method('checkCredentials', function(email, password, callback) {
+    var me = this;
 
     this.find({
-      'email' : email
-    }, function(err, user) {
-      if (!err) {
-        err = null;
+      email : email
+    }, function(err, result) {
+      if (result.length !== 0) {
+        var user = result[0];
+
+        var hashedPassword = hashPassword(password, user.password_salt);
+
+        if (result[0].password !== hashedPassword)
+          user = null;
+
+        if (callback)
+          callback(null, user);
+      } else {
+
+        if (callback)
+          callback(err, null);
       }
-      
-      if (!user[0].password && user[0].password !== encryptPassword(password, user[0].password_salt)) {
-        user = null;
-      }
-      
-      if (callback)
-        callback(err, user);
+
     });
   }, {
     properties : {

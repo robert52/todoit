@@ -57,7 +57,7 @@ describe('Authentication::API'.yellow, function() {
     });
     it('should pass for valid credentials', function(done) {
       request({
-        method : 'post',
+        method : 'POST',
         url : URL + '/login',
         form : {
           username : userObj.email,

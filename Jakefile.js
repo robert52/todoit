@@ -42,7 +42,7 @@ namespace('db', function() {
     if (!JK.Models) {
       JK.Models = {};
 
-      ['todo'].forEach(function(model) {
+      ['todo', 'user'].forEach(function(model) {
         JK.Models[model] = require('./app/models/' + model + '_model')(resourceful);
       });
     }
@@ -71,7 +71,7 @@ namespace('db', function() {
           process.exit(0);
         }
 
-        var todo = new (Todo)({
+        var todo = new(Todo)({
           title : faker.Lorem.sentence(),
           order : faker.Helpers.randomNumber(100),
           completed : false
@@ -88,4 +88,24 @@ namespace('db', function() {
           });
         });      }(count));
   });
+  
+  desc('Add test user');
+  task('adduser', ['connect', 'loadModels'], function() {
+    log('- db:adduser'.yellow);
+    var User = JK.Models.user;
+    
+    User.hashPassword('pass1234', function(password, salt) {
+      User.create({
+        email: 'robert@todoit.com',
+        password: password,
+        password_salt: salt
+      }, function(err, user) {
+        if (err) 
+          throw err;
+        
+        user.save();
+        log(' user saved'.green);
+      });
+    });
+  });  
 });

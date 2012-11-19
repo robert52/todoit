@@ -4,22 +4,20 @@
 		<meta charset='UTF-8' />
 		<title>Login page</title>
 		<link rel="stylesheet" href="css/bootstrap.css" />
-		<link rel="stylesheet" href="css/bootstrap-responsive.css" />
+		<link rel="stylesheet" href="css/m-styles.min.css" />
 		<link rel="stylesheet" href="css/style.css" />
 	</head>
 	<body>
-		<div class="container" action='/login' method='post'>
-			<form class="form-horizontal">
+		<div class="container">
+			<form class="form-horizontal" action='/login' method='post'>
 			  <div class="control-group">
-			    <label class="control-label" for="inputEmail">Email</label>
 			    <div class="controls">
-			      <input type="text" id="inputEmail" placeholder="Email">
+			      <input type="text" id="username" name="username" placeholder="Email" class='m-wrap' autofocus>
 			    </div>
 			  </div>
 			  <div class="control-group">
-			    <label class="control-label" for="inputPassword">Password</label>
 			    <div class="controls">
-			      <input type="password" id="inputPassword" placeholder="Password">
+			      <input type="password" id="password" name="password" placeholder="Password" class='m-wrap'>
 			    </div>
 			  </div>
 			  <div class="control-group">
@@ -27,7 +25,7 @@
 <!-- 			      <label class="checkbox">
 			        <input type="checkbox"> Remember me
 			      </label> -->
-			      <button type="submit" class="btn btn-success">Sign in</button>
+			      <button type="submit" class="m-btn green">Sign in</button>
 			    </div>
 			  </div>
 			</form>

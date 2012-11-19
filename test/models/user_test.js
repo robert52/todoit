@@ -66,15 +66,15 @@ describe('User::Model'.yellow, function() {
       });
     });
 
-    it('should not create for password length less then 8', function(done) {
-      var newUser = User.create({
-        email : 'john.doe@todos.com',
-        password : 'john!'
-      }, function(err, result) {
-        err.validate.errors[0].property.should.equal('password');
-        done();
-      });
-    });
+    // it('should not create for password length less then 8', function(done) {
+      // var newUser = User.create({
+        // email : 'john.doe@todos.com',
+        // password : 'john!'
+      // }, function(err, result) {
+        // err.validate.errors[0].property.should.equal('password');
+        // done();
+      // });
+    // });
 
     // it('should encrypt password', function(done) {
     // var newUser = User.create({
@@ -125,7 +125,10 @@ describe('User::Model'.yellow, function() {
 
     it('should find the user for valid credentials', function(done) {
       User.checkCredentials(newValues.email, newValues.password, function(err, result) {
-        result.length.should.not.equal(0);
+        if (err) 
+          throw err;
+        
+        result.email.should.equal(newValues.email);
 
         done();
       });    });

@@ -4,23 +4,22 @@
 	"author": "Robert Onodi",
 	"description": "Simple cooperative task manager application",
 	"engines": {
-		"node": ">=0.6.x"
+		"node": ">=0.8.x"
 	},
 	"scripts": {
 		"start": "node app.js",
 		"test": "mocha --ui bdd --recursive --reporter spec --timeout 10000 --slow 300"
 	},
 	"dependencies": {
-		"flatiron": "0.2.8",
+		"flatiron": "0.3.0",
+		"connect" : "2.7.0",
 		"union": "0.3.4",
 		"ecstatic": "0.1.6",
 		"resourceful": "0.3.2",
-		"plates": "0.4.8",
-		"restful": "0.4.3",
-		"passport": ">= 0.0.0",
-		"passport-local": ">= 0.0.0",
-		"flatiron-passport": ">= 0.0.0",
-		"colors": "*"
+		"colors": "*",
+		"passport": "0.1.15",
+		"passport-local": "0.1.6",
+		"flatiron-passport": "0.0.4"
 	},
 	"devDependencies": {
 		"mocha": "1.6.0",
