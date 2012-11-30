@@ -1,49 +1,43 @@
-var TodosRouter = function(app, resourceful) {
+var TodosRouter = function(app, resourceful, config, passport) {
 	var resources = resourceful.resources,
 		Todo = resources.Todo,
-		api = app.config.get('api-url');
+		api = config['api-url'];
 
 	/**
 	 * Get all clients
 	 */
-	app.router.get(api + '/todos', function() {
-		var me = this;
-
+	app.get(api + '/todos', function(req, res) {
 		Todo.all(function(err, result) {
-			me.res.json(200, result);
+			res.json(200, result);
 		});
 	});
 	
 	/**
 	 * Get a client by id 
 	 */
-	app.router.get(api + '/todos/:id', function(id) {
-		var me = this;
-
-		Todo.get(id, function(err, result) {
-			me.res.json(200, result);
+	app.get(api + '/todos/:id', function(req, res) {
+		Todo.get(req.params.id, function(err, result) {
+			res.json(200, result);
 		});
 	});
 	
 	/**
 	 * Create new user 
 	 */
-	app.router.post(api + '/todos/', function() {
-		var me = this;
-		
+	app.post(api + '/todos/', function(req, res) {
 		var todo = new(Todo)({
-			title: me.req.body.title,
-			order: me.req.body.order,
-			completed: me.req.body.completed
+			title: req.body.title,
+			order: req.body.order,
+			completed: req.body.completed
 		});
 		
 		todo.save(function(err, t) {
 			if (!err) {
 				var loc = api + '/todos/' + t.id;
-				me.res.setHeader('Location', loc);
-				me.res.json(201, t);
+				res.setHeader('Location', loc);
+				res.json(201, t);
 			} else {
-				me.res.json(500, err);
+				res.json(500, err);
 			}
 		});
 	});
@@ -51,19 +45,17 @@ var TodosRouter = function(app, resourceful) {
 	/**
 	 * Update user 
 	 */
-	app.router.put(api + '/todos/:id', function(id) {
-		var me = this;
-		
-		Todo.update(id, {
-			title: me.req.body.title,
-			order: me.req.body.order,
-			completed: me.req.body.completed
+	app.put(api + '/todos/:id', function(req, res) {
+		Todo.update(req.params.id, {
+			title: req.body.title,
+			order: req.body.order,
+			completed: req.body.completed
 		}, function(err, result) {
 			if (!err) {
-				me.res.json(204)
+				res.json(204)
 				//console.log(result);
 			} else {
-				me.res.json(500, err);
+				res.json(500, err);
 				//console.log(err);
 			}
 		});
@@ -72,14 +64,12 @@ var TodosRouter = function(app, resourceful) {
 	/**
 	 * Delete user 
 	 */
-	app.router.delete(api + '/todos/:id', function(id) {
-		var me = this;
-		
-		Todo.destroy(id, function(err) {
+	app.del(api + '/todos/:id', function(req, res) {
+		Todo.destroy(req.params.id, function(err) {
 			if (!err) {
-				me.res.json(204);
+				res.json(204);
 			} else {
-				me.res.json(500, err);
+				res.json(500, err);
 			}
 		});
 	});		

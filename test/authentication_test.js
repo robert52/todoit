@@ -17,9 +17,9 @@ var resourceful = require('resourceful'),
     URL, 
     ENV;
 
-config = app.config;
+config = utils.loadConfig();
 ENV = process.env.NODE_ENV;
-URL = utils.createBaseUrl(config.get('host'), config.get('port'), config.get('https'));
+URL = utils.createBaseUrl(config['host'], config['port'], config['https']);
 
 describe('Authentication::API'.yellow, function() {
   var User, 
@@ -57,7 +57,7 @@ describe('Authentication::API'.yellow, function() {
     });
     it('should pass for valid credentials', function(done) {
       request({
-        method : 'post',
+        method : 'POST',
         url : URL + '/login',
         form : {
           username : userObj.email,
@@ -66,9 +66,9 @@ describe('Authentication::API'.yellow, function() {
       }, function(err, res, body) {
         if (err)
           throw err;
-
+        
         res.statusCode.should.equal(302);
-        res.headers.location.should.equal(URL + '/dashboard');
+        res.headers.location.should.equal('/dashboard');
         
         done();
       });

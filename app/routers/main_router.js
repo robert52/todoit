@@ -1,16 +1,37 @@
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect('/');
+}
+
 var MainRouter;
 
-MainRouter = function(app, resourceful, plates, fpassport) {
-  app.router.get('/dashboard', function() {
-
-  });
+MainRouter = function(app, resourceful, config, passport) {
   /**
    * Authenticating user
    */
-  app.router.post('/login', fpassport.authenticate('loal', {
+  app.post('/login', passport.authenticate('local', {
     successRedirect : '/dashboard',
-    failureRedirect : '/login.html'
+    failureRedirect : '/'
   }));
+  
+  /**
+   * Logout user 
+   */
+  app.get('/logout', function(req, res) {
+    req.logOut();
+    res.redirect('/');
+  });
+  
+  /**
+   * Protect dashboard folder 
+   */
+  app.get('/dashboard/*', ensureAuthenticated, function(req, res, next) {
+    next();
+  });
+  
+  /**
+   * Protect API  
+   */  
 };
 
 module.exports = MainRouter;

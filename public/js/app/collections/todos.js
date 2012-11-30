@@ -5,10 +5,10 @@ define([
 	'app/models/todo'
 ],function($, _, Backbone, Todo) {
 	var TodoCollection;
-
+  
 	TodoCollection = Backbone.Collection.extend({
 		model: Todo,
-		url: 'api/todos',
+		url: '../api/todos',
 		idAttribute: 'id',
 		nextOrder: function() {
             if (!this.length) {

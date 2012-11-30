@@ -8,18 +8,18 @@
 		<link rel="stylesheet" href="css/style.css" />
 	</head>
 	<body>
-		<div class="container" action='/login' method='post'>
-			<form class="form-horizontal">
+		<div class="container">
+			<form class="form-horizontal" action='/login' method='post'>
 			  <div class="control-group">
-			    <label class="control-label" for="inputEmail">Email</label>
+			    <label class="control-label" for="username">Email</label>
 			    <div class="controls">
-			      <input type="text" id="inputEmail" placeholder="Email">
+			      <input type="text" id="username" name='username' placeholder="Email">
 			    </div>
 			  </div>
 			  <div class="control-group">
-			    <label class="control-label" for="inputPassword">Password</label>
+			    <label class="control-label" for="password">Password</label>
 			    <div class="controls">
-			      <input type="password" id="inputPassword" placeholder="Password">
+			      <input type="password" id="password" name="password" placeholder="Password">
 			    </div>
 			  </div>
 			  <div class="control-group">
@@ -27,7 +27,7 @@
 <!-- 			      <label class="checkbox">
 			        <input type="checkbox"> Remember me
 			      </label> -->
-			      <button type="submit" class="btn btn-success">Sign in</button>
+			      <button type="submit" value="submint" class="btn btn-success">Sign in</button>
 			    </div>
 			  </div>
 			</form>

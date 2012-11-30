@@ -45,25 +45,7 @@ var UserModel = function(resourceful) {
     restricted : true,
     minLength : 7
   });
-  /**
-   * Define a setter for the password property
-   *
-   * in case the password is set it will be automatically hashed
-   * TODO: this is not working password is hashed everytime it is set
-   */
-  // User.property('password', 'string', {
-  // set: function(value) {
-  // console.log('#setter');
-  // if (typeof value !== 'undefined' && value !== null) {
-  // this.password_salt = makeSalt();
-  // value = encryptPassword(value, this.password_salt);
-  // }
-  //
-  // return value;
-  // },
-  // required: true,
-  // restricted: true
-  // });
+
   /**
    * Hash the user's password
    *
@@ -99,17 +81,22 @@ var UserModel = function(resourceful) {
 
     this.find({
       'email' : email
-    }, function(err, user) {
+    }, function(err, result) {
+      var user = null;
+      
       if (!err) {
         err = null;
       }
+
+      if (result.length !== 0) {
+        user = result[0];
+        
+        if (user.password !== encryptPassword(password, user.password_salt)) {
+          user = null;
+        }        
+      } 
       
-      if (!user[0].password && user[0].password !== encryptPassword(password, user[0].password_salt)) {
-        user = null;
-      }
-      
-      if (callback)
-        callback(err, user);
+      if (callback) callback(err, user);
     });
   }, {
     properties : {
