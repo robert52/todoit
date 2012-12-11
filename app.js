@@ -18,7 +18,7 @@ resourceful.use( config.storage.engine, { database: config.storage.database });
 /**
  * Registering models
  */
-['todo', 'user'].forEach(function(model) {
+['user', 'project', 'todo',].forEach(function(model) {
   resources[model] = require('./app/models/' + model + '_model')(resourceful);
 });
 
@@ -66,7 +66,7 @@ app.configure(function() {
 /**
  * Registering routers
  */
-['main', 'todos'].forEach(function(router) {
+['main', 'projects', 'todos'].forEach(function(router) {
   require('./app/routers/' + router + '_router')(app, resourceful, config, passport);
 });
 
