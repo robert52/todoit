@@ -125,7 +125,7 @@ describe('User::Model'.yellow, function() {
 
     it('should find the user for valid credentials', function(done) {
       User.checkCredentials(newValues.email, newValues.password, function(err, result) {
-        result.length.should.not.equal(0);
+        result.should.not.equal(null);
 
         done();
       });    });
