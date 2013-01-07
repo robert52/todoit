@@ -25,13 +25,16 @@ MainRouter = function(app, resourceful, config, passport) {
   /**
    * Protect dashboard folder 
    */
-  app.get('/dashboard/*', ensureAuthenticated, function(req, res, next) {
+  app.all('/dashboard/*', ensureAuthenticated, function(req, res, next) {
     next();
   });
   
   /**
    * Protect API  
-   */  
+   */
+  app.all('/api/*', ensureAuthenticated, function(req, res, next) {
+    next();
+  });  
 };
 
 module.exports = MainRouter;

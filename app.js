@@ -1,14 +1,19 @@
-var express = require('express'), 
+var express = require('express'),
+    http = require('http'),
     resourceful = require('resourceful'), 
     path = require('path'), 
     passport = require('passport'), 
     LocalStrategy = require('passport-local').Strategy,  
-    app = module.exports = express(), 
+    app = express(), 
     ENV = process.env.NODE_ENV || 'development', 
     colors = require('colors'),
     resources = {},
     utils = require('./lib/utils'),
-    config = utils.loadConfig();
+    config = utils.loadConfig(),
+    EventEmitter = require('events').EventEmitter,
+    AppEmitter = new EventEmitter(),
+    appStarter,
+    server;
 
 /**
  * Storage engine
@@ -18,7 +23,7 @@ resourceful.use( config.storage.engine, { database: config.storage.database });
 /**
  * Registering models
  */
-['todo', 'user'].forEach(function(model) {
+['user', 'project', 'collaborator', 'todo'].forEach(function(model) {
   resources[model] = require('./app/models/' + model + '_model')(resourceful);
 });
 
@@ -26,24 +31,24 @@ resourceful.use( config.storage.engine, { database: config.storage.database });
  * Authentification system
  */
 passport.serializeUser(function(user, done) {
-    done(null, user.id);
+  done(null, user.id);
 });
 
 passport.deserializeUser(function(id, done) {
-    resources.user.get(id, function(err, user) {
-        done(err, user);     
-    });
+  resources.user.get(id, function(err, user) {
+    done(err, user);     
+  });
 });
 
 passport.use('local', new LocalStrategy(function(username, password, done) {
-    process.nextTick(function() {
-        resources.user.checkCredentials(username, password, function(err, user) {
-            if (err) { return done(err); }
-            if (!user) { return done(null, false, {message: 'Unknown user ' + username}); }
-            
-            return done(null, user);
-        });         
-    });
+  process.nextTick(function() {
+    resources.user.checkCredentials(username, password, function(err, user) {
+      if (err) { return done(err); }
+      if (!user) { return done(null, false, {message: 'Unknown user ' + username}); }
+      
+      return done(null, user);
+    });         
+  });
 }));
 
 /**
@@ -66,12 +71,47 @@ app.configure(function() {
 /**
  * Registering routers
  */
-['main', 'todos'].forEach(function(router) {
+['main', ,'projects', 'todos'].forEach(function(router) {
   require('./app/routers/' + router + '_router')(app, resourceful, config, passport);
 });
 
 /**
- * Start the app
+ * App starter function 
  */
-app.listen(config.port || 3000);
-console.log('App is running: '.green + 'Environment: ' + ENV.cyan);
+appStarter = function() {
+  server = http.createServer(app);
+  server.listen(config.port || 3000);
+  console.log(('App is running, listening on port: ' + server.address().port).green + ' Environment: ' + ENV.cyan);   
+};
+
+/**
+ * Start the app if not loaded by another module
+ */
+if (!module.parent) {
+ appStarter();
+}
+
+/**
+ * App starter event
+ */
+AppEmitter.on('app-start', function() {
+  appStarter();
+  AppEmitter.emit('server-running', server, app);
+});
+/**
+ * Expose the app service
+ */
+AppEmitter.on('app-check', function() {
+  AppEmitter.emit('app-get', app);
+});
+/**
+ * Expose server
+ */
+AppEmitter.on('server-check', function() {
+  AppEmitter.emit('server-get', server);
+});
+/**
+ * Export to use in external modules.
+ * Can execute a callback after the app has loaded.
+ */
+module.exports = app;

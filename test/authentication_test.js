@@ -3,14 +3,14 @@
  */
 process.env.NODE_ENV = 'test';
 
-var resourceful = require('resourceful'), 
-    root = __dirname + '/../', 
-    utils = require(root + 'lib/utils'), 
-    colors = require('colors'), 
+var root = __dirname + '/../', 
+    utils = require(root + 'lib/utils'),
+    http = require('http'),
+    resourceful = require('resourceful'),
+    colors = require('colors'),
     chai = require('chai'), 
     should = chai.should(), 
     request = require('request'),
-    app = require(root + 'app'),  
     api = '/api', 
     config, 
     db, 
@@ -41,6 +41,7 @@ describe('Authentication::API'.yellow, function() {
   });
 
   describe('#User Login'.cyan, function() {
+    
     before(function(done) {
       User.hashPassword(userObj.password, function(password, salt) {
         User.create({
@@ -48,13 +49,26 @@ describe('Authentication::API'.yellow, function() {
           password: password,
           password_salt: salt
         }, function(err, user) {
-          if (err) 
-            throw err;
+          if (err) throw err;
           
           done();
         });
       });
     });
+    
+    after(function(done) {
+      request({
+        method : 'GET',
+        url : URL + '/logout'
+      }, function(err, res, body) {
+        if (err) throw err;
+
+        res.statusCode.should.equal(200);
+
+        done();
+      });      
+    });
+    
     it('should pass for valid credentials', function(done) {
       request({
         method : 'POST',
@@ -64,9 +78,8 @@ describe('Authentication::API'.yellow, function() {
           password : userObj.password
         }
       }, function(err, res, body) {
-        if (err)
-          throw err;
-        
+        if (err) throw err;
+
         res.statusCode.should.equal(302);
         res.headers.location.should.equal('/dashboard');
         

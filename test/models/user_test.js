@@ -3,15 +3,15 @@
  */
 process.env.NODE_ENV = 'test';
 
-var resourceful = require('resourceful'), 
-    root = __dirname + '/../../', 
-    utils = require(root + 'lib/utils'), 
-    colors = require('colors'), 
-    chai = require('chai'), 
-    expect = chai.expect, 
-    should = chai.should(), 
-    request = require('request'), 
-    config = utils.loadConfig(), 
+var resourceful = require('resourceful'),
+    root = __dirname + '/../../',
+    utils = require(root + 'lib/utils'),
+    colors = require('colors'),
+    chai = require('chai'),
+    expect = chai.expect,
+    should = chai.should(),
+    request = require('request'),
+    config = utils.loadConfig(),
     api = '/api',
     //app = require(root + 'app'),
     db, URL, ENV;
@@ -85,6 +85,7 @@ describe('User::Model'.yellow, function() {
     // done();
     // });
     // })  });  describe('#Get User'.cyan, function(done) {
+    
     it('should return user without password and salt when calling with safeJSON', function(done) {
       User.hashPassword(values.password, function(password, salt) {
         User.create({
@@ -128,6 +129,7 @@ describe('User::Model'.yellow, function() {
         result.should.not.equal(null);
 
         done();
-      });    });
+      });
+    });
   });
 });

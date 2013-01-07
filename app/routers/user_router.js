@@ -1,22 +1,6 @@
 var UserRouter = function(app, resourceful, plates, config) {
 	var resources = resourceful.resources,
-		api = app.config.get('api-url');
-	// create example
-	// resources.User.create({
-		// name : 'Bob',
-		// password : 'bob!234',
-		// email : 'bob@test.com'
-	// }, function(err, bob) {
-		// bob.save();
-	// });
-
-	/**
-	 * Sending a User as response 
-	 */
-	// app.router.get('/user', function() {
-		// //this.res.writeHead(200, {'Content-Type': 'application/json'});
-		// this.res.json(200, bob);
-	// });
+		  api = app.config.get('api-url');
 	
 	/**
 	 * Getting all users from the database 
