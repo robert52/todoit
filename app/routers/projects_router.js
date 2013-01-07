@@ -2,8 +2,9 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
 	var resources = resourceful.resources,
       User = resources.User,
   		Project = resources.Project,
-  		api = config['api-url'];
-
+  		api = config['api-url'],
+  		grant = require('../features/grant');
+  
 	/**
 	 * Get all user's projects
 	 */
@@ -23,9 +24,13 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
 	 * Get a project by id 
 	 */
 	app.get(api + '/projects/:id', function(req, res) {
-    Project.get(req.params.id, function(err, result) {
+    Project.get(req.params.id, function(err, project) {
       if (!err) {
-        res.json(200, result);
+        if(grant(project.collaborator_ids, req.user.id)) {
+          res.json(200, project);
+        } else {
+          res.json(401, {msg: 'No access!'});
+        }
       } else {
         throw err;
         
@@ -60,21 +65,32 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
 	});
 	
 	/**
-	 * Update project 
+	 * Update project
+	 * 
+	 * TODO: check user access level
 	 */
 	app.put(api + '/projects/:id', function(req, res) {
-		Project.update(req.params.id, {
-      name: req.body.name,
-      description: req.body.description,
-      status: req.body.status
-		}, function(err, result) {
-		  
-			if (!err) {
-				res.json(204)
-			} else {
-				res.json(500, err);
-			}
-		});
+	  Project.get(req.params.id, function(err, project) {
+	    if (err) {
+        res.json(500, err);	      
+	    }
+	    
+	    if(grant(project.collaborator_ids, req.user.id)) {
+        Project.update(req.params.id, {
+          name: req.body.name,
+          description: req.body.description,
+          status: req.body.status
+        }, function(err, result) {
+          if (!err) {
+            res.json(200, result);
+          } else {
+            res.json(500, err);
+          }
+        });	      
+	    } else {
+	      res.json(401, {msg: 'No access!'});
+	    }
+	  });
 	});
 	
 	/**
@@ -85,7 +101,10 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
 	app.del(api + '/projects/:id', function(req, res) {
 		Project.destroy(req.params.id, function(err) {
 			if (!err) {
-				res.json(204);
+				res.json(200, {
+				  status: 'ok',
+				  msg: 'resource deleted successfully'
+				});
 			} else {
 				res.json(500, err);
 			}
@@ -103,10 +122,10 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
       access: req.body.access      
     }, function(err, collaborator) {
       if (!err) {
-          res.json(204);
-        } else {
-          res.json(500, err);
-        }        
+        res.json(201, collaborator);
+      } else {
+        res.json(500, err);
+      }  
     });
 	});
 };

@@ -176,5 +176,102 @@ describe('Project::API'.yellow, function() {
         done();
       });      
     });
+    
   });
+  
+  // describe('#Authorized access'.cyan, function() {
+    // before(function(done) {
+      // request({
+        // method : 'POST',
+        // url : URL + '/login',
+        // form : {
+          // username : mockUser.username[0],
+          // password : mockUser.password
+        // }
+      // }, function(err, res, body) {
+        // if (err) throw err;
+// 
+        // res.statusCode.should.equal(302);
+        // res.headers.location.should.equal('/dashboard');
+//         
+        // done();
+      // });
+    // });
+// 
+    // after(function(done) {
+      // request({
+        // method : 'GET',
+        // url : URL + '/logout'
+      // }, function(err, res, body) {
+        // if (err) throw err;
+// 
+        // res.statusCode.should.equal(200);
+// 
+        // done();
+      // });      
+    // });
+//     
+    // it('should get a project by id', function(done) {
+      // request({
+        // method: 'GET',
+        // url: URL + '/api/projects/' + projectId
+      // }, function(err, res, body) {
+        // if (err) throw err;
+//         
+        // res.statusCode.should.equal(200);
+//         
+        // done();
+      // });
+    // });
+//     
+    // it('should update a project', function(done) {
+      // request({
+        // method : 'PUT',
+        // url: URL + '/api/projects/' + projectId,
+        // form: {
+          // name: 'Updated project name',
+          // description: 'Updated description',
+          // status: 'active'          
+        // }
+      // }, function(err, res, body) {
+        // if (err) throw err;
+// 
+        // res.statusCode.should.equal(200);
+//         
+        // done();
+      // });      
+    // });
+//     
+    // it('should add collaborator to project', function(done) {
+      // request({
+        // method : 'POST',
+        // url: URL + '/api/projects/collaborators',
+        // form: {
+          // id: projectId,
+          // user_id: seconduserId,
+          // access: 'normal'          
+        // }
+      // }, function(err, res, body) {
+        // if (err) throw err;
+//         
+        // res.statusCode.should.equal(201);
+//         
+        // done();
+      // });      
+    // });
+//     
+    // it('should delete a project', function(done) {
+      // request({
+        // method : 'DELETE',
+        // url: URL + '/api/projects/' + projectId
+      // }, function(err, res, body) {
+        // if (err) throw err;
+//         
+        // res.statusCode.should.equal(200);
+//         
+        // done();
+      // });      
+    // });
+//            
+  // });  
 });

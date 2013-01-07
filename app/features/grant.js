@@ -1,5 +1,6 @@
 var underscore = require('underscore');
 
 module.exports = function(collaborators, user) {
-  return _.contains(collaborators, user);
+  console.log(collaborators, user, underscore.contains(collaborators, user));
+  return underscore.contains(collaborators, user);
 };
