@@ -3,18 +3,18 @@
  */
 process.env.NODE_ENV = 'test';
 
-var root = __dirname + '/../../', 
+var root = __dirname + '/../../',
     utils = require(root + 'lib/utils'),
     http = require('http'),
     resourceful = require('resourceful'),
     colors = require('colors'),
-    chai = require('chai'), 
-    should = chai.should(), 
+    chai = require('chai'),
+    should = chai.should(),
     request = require('request'),
-    api = '/api', 
-    config, 
-    db, 
-    URL, 
+    api = '/api',
+    config,
+    db,
+    URL,
     ENV;
 
 config = utils.loadConfig();
@@ -42,7 +42,7 @@ describe('Project::API'.yellow, function() {
           password_salt: salt
         }, function(err, anotherUser) {
           if (err) throw err;
-          
+          console.log(anotherUser + '\n');
           seconduserId = anotherUser.id
         });        
         
@@ -52,7 +52,7 @@ describe('Project::API'.yellow, function() {
           password_salt: salt
         }, function(err, user) {
           if (err) throw err;
-          
+          console.log(user + '\n');
           userId = user.id;
 
           Project.create({
@@ -143,9 +143,9 @@ describe('Project::API'.yellow, function() {
         res.statusCode.should.equal(401);
         
         done();
-      });      
+      });
     });
-    
+
     it('should not add collaborator', function(done) {
       request({
         method : 'POST',
@@ -163,7 +163,7 @@ describe('Project::API'.yellow, function() {
         done();
       });      
     });
-    
+
     it('should not delete a project', function(done) {
       request({
         method : 'DELETE',
@@ -178,100 +178,100 @@ describe('Project::API'.yellow, function() {
     });
     
   });
-  
-  // describe('#Authorized access'.cyan, function() {
-    // before(function(done) {
-      // request({
-        // method : 'POST',
-        // url : URL + '/login',
-        // form : {
-          // username : mockUser.username[0],
-          // password : mockUser.password
-        // }
-      // }, function(err, res, body) {
-        // if (err) throw err;
-// 
-        // res.statusCode.should.equal(302);
-        // res.headers.location.should.equal('/dashboard');
-//         
-        // done();
-      // });
-    // });
-// 
-    // after(function(done) {
-      // request({
-        // method : 'GET',
-        // url : URL + '/logout'
-      // }, function(err, res, body) {
-        // if (err) throw err;
-// 
-        // res.statusCode.should.equal(200);
-// 
-        // done();
-      // });      
-    // });
-//     
-    // it('should get a project by id', function(done) {
-      // request({
-        // method: 'GET',
-        // url: URL + '/api/projects/' + projectId
-      // }, function(err, res, body) {
-        // if (err) throw err;
-//         
-        // res.statusCode.should.equal(200);
-//         
-        // done();
-      // });
-    // });
-//     
-    // it('should update a project', function(done) {
-      // request({
-        // method : 'PUT',
-        // url: URL + '/api/projects/' + projectId,
-        // form: {
-          // name: 'Updated project name',
-          // description: 'Updated description',
-          // status: 'active'          
-        // }
-      // }, function(err, res, body) {
-        // if (err) throw err;
-// 
-        // res.statusCode.should.equal(200);
-//         
-        // done();
-      // });      
-    // });
-//     
-    // it('should add collaborator to project', function(done) {
-      // request({
-        // method : 'POST',
-        // url: URL + '/api/projects/collaborators',
-        // form: {
-          // id: projectId,
-          // user_id: seconduserId,
-          // access: 'normal'          
-        // }
-      // }, function(err, res, body) {
-        // if (err) throw err;
-//         
-        // res.statusCode.should.equal(201);
-//         
-        // done();
-      // });      
-    // });
-//     
-    // it('should delete a project', function(done) {
-      // request({
-        // method : 'DELETE',
-        // url: URL + '/api/projects/' + projectId
-      // }, function(err, res, body) {
-        // if (err) throw err;
-//         
-        // res.statusCode.should.equal(200);
-//         
-        // done();
-      // });      
-    // });
-//            
-  // });  
+
+  describe('#Authorized access'.cyan, function() {
+    before(function(done) {
+      request({
+        method : 'POST',
+        url : URL + '/login',
+        form : {
+          username : mockUser.username[0],
+          password : mockUser.password
+        }
+      }, function(err, res, body) {
+        if (err) throw err;
+
+        res.statusCode.should.equal(302);
+        res.headers.location.should.equal('/dashboard');
+        
+        done();
+      });
+    });
+
+    after(function(done) {
+      request({
+        method : 'GET',
+        url : URL + '/logout'
+      }, function(err, res, body) {
+        if (err) throw err;
+
+        res.statusCode.should.equal(200);
+
+        done();
+      });
+    });
+    
+    it('should get a project by id', function(done) {
+      request({
+        method: 'GET',
+        url: URL + '/api/projects/' + projectId
+      }, function(err, res, body) {
+        if (err) throw err;
+        
+        res.statusCode.should.equal(200);
+        
+        done();
+      });
+    });
+
+    it('should update a project', function(done) {
+      request({
+        method : 'PUT',
+        url: URL + '/api/projects/' + projectId,
+        form: {
+          name: 'Updated project name',
+          description: 'Updated description',
+          status: 'active'          
+        }
+      }, function(err, res, body) {
+        if (err) throw err;
+
+        res.statusCode.should.equal(200);
+        
+        done();
+      });
+    });
+
+    it('should add collaborator to project', function(done) {
+      request({
+        method : 'POST',
+        url: URL + '/api/projects/collaborators',
+        form: {
+          id: projectId,
+          user_id: seconduserId,
+          access: 'normal'          
+        }
+      }, function(err, res, body) {
+        if (err) throw err;
+        
+        res.statusCode.should.equal(201);
+        
+        done();
+      });
+    });
+
+    it('should delete a project', function(done) {
+      request({
+        method : 'DELETE',
+        url: URL + '/api/projects/' + projectId
+      }, function(err, res, body) {
+        if (err) throw err;
+        
+        res.statusCode.should.equal(200);
+        
+        done();
+      });
+    });
+
+  });
 });

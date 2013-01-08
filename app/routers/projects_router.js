@@ -67,12 +67,11 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
 	/**
 	 * Update project
 	 * 
-	 * TODO: check user access level
 	 */
 	app.put(api + '/projects/:id', function(req, res) {
 	  Project.get(req.params.id, function(err, project) {
 	    if (err) {
-        res.json(500, err);	      
+        res.json(500, err);
 	    }
 	    
 	    if(grant(project.collaborator_ids, req.user.id)) {
@@ -86,7 +85,7 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
           } else {
             res.json(500, err);
           }
-        });	      
+        });
 	    } else {
 	      res.json(401, {msg: 'No access!'});
 	    }
@@ -96,37 +95,55 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
 	/**
 	 * Delete project
 	 * 
-	 * TODO: check user access level 
 	 */
 	app.del(api + '/projects/:id', function(req, res) {
-		Project.destroy(req.params.id, function(err) {
-			if (!err) {
-				res.json(200, {
-				  status: 'ok',
-				  msg: 'resource deleted successfully'
-				});
-			} else {
-				res.json(500, err);
-			}
-		});
+    Project.get(req.params.id, function(err, project) {
+      if (err) {
+        res.json(500, err);       
+      }
+      
+      if(grant(project.collaborator_ids, req.user.id)) {
+        Project.destroy(req.params.id, function(err) {
+          if (!err) {
+            res.json(200, {
+              status: 'ok',
+              msg: 'resource deleted successfully'
+            });
+          } else {
+            res.json(500, err);
+          }
+        });
+      } else {
+        res.json(401, {msg: 'No access!'});
+      }
+    });
 	});
 	
 	/**
 	 * Add collaborator
 	 * 
-	 * TODO: check user access level 
 	 */
 	app.post(api + '/projects/collaborators', function(req, res) {
-    Project.createCollaborator(req.body.id, {
-      user_id: req.body.user_id,
-      access: req.body.access      
-    }, function(err, collaborator) {
-      if (!err) {
-        res.json(201, collaborator);
-      } else {
+    Project.get(req.body.id, function(err, project) {
+      if (err) {
         res.json(500, err);
-      }  
-    });
+      }
+      
+      if(grant(project.collaborator_ids, req.user.id)) {
+        Project.createCollaborator(req.body.id, {
+          user_id: req.body.user_id,
+          access: req.body.access
+        }, function(err, collaborator) {
+          if (!err) {
+            res.json(201, collaborator);
+          } else {
+            res.json(500, err);
+          }  
+        });
+      } else {
+        res.json(401, {msg: 'No access!'});
+      }
+    }); 
 	});
 };
 
