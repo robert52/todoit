@@ -42,7 +42,7 @@ describe('Project::API'.yellow, function() {
           password_salt: salt
         }, function(err, anotherUser) {
           if (err) throw err;
-          console.log(anotherUser + '\n');
+
           seconduserId = anotherUser.id
         });        
         
@@ -52,7 +52,7 @@ describe('Project::API'.yellow, function() {
           password_salt: salt
         }, function(err, user) {
           if (err) throw err;
-          console.log(user + '\n');
+
           userId = user.id;
 
           Project.create({

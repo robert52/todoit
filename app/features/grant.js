@@ -8,6 +8,9 @@ var underscore = require('underscore');
  */
 
 module.exports = function(collaborators, user) {
-  console.log(collaborators, user, underscore.contains(collaborators, user));
-  return underscore.contains(collaborators, user);
+  var found = underscore.filter(collaborators, function(collaborator) {
+    return collaborator.user_id === user;
+  });
+  
+  return found.length !== 0;
 };

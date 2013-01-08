@@ -9,9 +9,9 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
 	 * Get all user's projects
 	 */
 	app.get(api + '/projects', function(req, res) {
-	  Project.find({'owner_id' : req.user.id}, function(err, result) {
+	  Project.find({'owner_id' : req.user.id}, function(err, projects) {
 	    if (!err) {
-	      res.json(200, result);
+	      res.json(200, projects);
 	    } else {
         throw err;
         
@@ -24,17 +24,25 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
 	 * Get a project by id 
 	 */
 	app.get(api + '/projects/:id', function(req, res) {
-    Project.get(req.params.id, function(err, project) {
-      if (!err) {
-        if(grant(project.collaborator_ids, req.user.id)) {
-          res.json(200, project);
-        } else {
-          res.json(401, {msg: 'No access!'});
-        }
-      } else {
+    Project.collaborators(req.params.id, function(err, collaborators) {
+      if (err) {
         throw err;
         
         res.json(500, err);
+      }
+            
+      if(grant(collaborators, req.user.id)) {
+        Project.get(req.params.id, function(err, project) {
+          if (!err) {
+            res.json(200, project);
+          } else {
+            throw err;
+            
+            res.json(500, err);
+          }
+        });
+      } else {
+        res.json(401, {msg: 'No access!'});
       }
     });
 	});
@@ -54,10 +62,11 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
 	      access: 'owner'
 	    }, function(err, collaborator) {
         if (!err) {
-          var loc = api + '/projects/' + project.id;
-          res.setHeader('Location', loc);
+          res.setHeader('Location', api + '/projects/' + project.id);
           res.json(201, project);
         } else {
+          throw err;
+          
           res.json(500, err);
         }
 	    });
@@ -69,12 +78,14 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
 	 * 
 	 */
 	app.put(api + '/projects/:id', function(req, res) {
-	  Project.get(req.params.id, function(err, project) {
+	  Project.collaborators(req.params.id, function(err, collaborators) {
 	    if (err) {
+	      throw err;
+	      
         res.json(500, err);
 	    }
 	    
-	    if(grant(project.collaborator_ids, req.user.id)) {
+	    if(grant(collaborators, req.user.id)) {
         Project.update(req.params.id, {
           name: req.body.name,
           description: req.body.description,
@@ -83,6 +94,8 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
           if (!err) {
             res.json(200, result);
           } else {
+            throw err;
+            
             res.json(500, err);
           }
         });
@@ -97,12 +110,14 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
 	 * 
 	 */
 	app.del(api + '/projects/:id', function(req, res) {
-    Project.get(req.params.id, function(err, project) {
+    Project.collaborators(req.params.id, function(err, collaborators) {
       if (err) {
+        throw err;
+        
         res.json(500, err);       
       }
       
-      if(grant(project.collaborator_ids, req.user.id)) {
+      if(grant(collaborators, req.user.id)) {
         Project.destroy(req.params.id, function(err) {
           if (!err) {
             res.json(200, {
@@ -110,6 +125,8 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
               msg: 'resource deleted successfully'
             });
           } else {
+            throw err;
+            
             res.json(500, err);
           }
         });
@@ -124,12 +141,14 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
 	 * 
 	 */
 	app.post(api + '/projects/collaborators', function(req, res) {
-    Project.get(req.body.id, function(err, project) {
+    Project.collaborators(req.body.id, function(err, collaborators) {
       if (err) {
+        throw err;
+        
         res.json(500, err);
       }
       
-      if(grant(project.collaborator_ids, req.user.id)) {
+      if(grant(collaborators, req.user.id)) {
         Project.createCollaborator(req.body.id, {
           user_id: req.body.user_id,
           access: req.body.access
@@ -137,6 +156,8 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
           if (!err) {
             res.json(201, collaborator);
           } else {
+            throw err;
+            
             res.json(500, err);
           }  
         });
