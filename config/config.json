@@ -1,8 +1,8 @@
 {
-	"port": "3000",
-	"storage" : {
-		"engine" : "couchdb",
-		"database" : "todos_db"
-	},
-	"api-url": "/api"
+  "port": "3000",
+  "storage": {
+    "engine": "couchdb",
+    "database": "todos_db"
+  },
+  "api-url": "/api"
 }

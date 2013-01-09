@@ -1,10 +1,10 @@
 {
-	"port": 3001,
-	"host": "127.0.0.1",
-	"https": false,
-	"storage": {
-		"engine": "couchdb",
-		"database": "todos_dev_db"
-	},
-	"api-url": "/api"
+  "port": 3001,
+  "host": "127.0.0.1",
+  "https": false,
+  "storage": {
+    "engine": "couchdb",
+    "database": "todos_dev_db"
+  },
+  "api-url": "/api"
 }

@@ -1,29 +1,29 @@
 var ProjectsRouter = function(app, resourceful, config, passport) {
-	var resources = resourceful.resources,
+  var resources = resourceful.resources,
       User = resources.User,
-  		Project = resources.Project,
-  		api = config['api-url'],
-  		grant = require('../features/grant');
-  
-	/**
-	 * Get all user's projects
-	 */
-	app.get(api + '/projects', function(req, res) {
-	  Project.find({'owner_id' : req.user.id}, function(err, projects) {
-	    if (!err) {
-	      res.json(200, projects);
-	    } else {
+      Project = resources.Project,
+      api = config['api-url'],
+      grant = require('../features/grant');
+
+  /**
+   * Get all user's projects
+   */
+  app.get(api + '/projects', function(req, res) {
+    Project.find({'owner_id' : req.user.id}, function(err, projects) {
+      if (!err) {
+        res.json(200, projects);
+      } else {
         throw err;
         
         res.json(500, err);
-	    }
-	  });
-	});
-	
-	/**
-	 * Get a project by id 
-	 */
-	app.get(api + '/projects/:id', function(req, res) {
+      }
+    });
+  });
+  
+  /**
+   * Get a project by id 
+   */
+  app.get(api + '/projects/:id', function(req, res) {
     Project.collaborators(req.params.id, function(err, collaborators) {
       if (err) {
         throw err;
@@ -45,22 +45,22 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
         res.json(401, {msg: 'No access!'});
       }
     });
-	});
-	
-	/**
-	 * Create new project
-	 */
-	app.post(api + '/projects/', function(req, res) {
-	  Project.create({
-	    owner_id: req.user.id,
+  });
+
+  /**
+   * Create new project
+   */
+  app.post(api + '/projects/', function(req, res) {
+    Project.create({
+      owner_id: req.user.id,
       name: req.body.name,
       description: req.body.description,
       status: req.body.status || 'active'
-	  }, function(err, project) {
-	    Project.createCollaborator(project.id, {
-	      user_id: req.user.id,
-	      access: 'owner'
-	    }, function(err, collaborator) {
+    }, function(err, project) {
+      Project.createCollaborator(project.id, {
+        user_id: req.user.id,
+        access: 'owner'
+      }, function(err, collaborator) {
         if (!err) {
           res.setHeader('Location', api + '/projects/' + project.id);
           res.json(201, project);
@@ -69,23 +69,23 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
           
           res.json(500, err);
         }
-	    });
-	  });
-	});
-	
-	/**
-	 * Update project
-	 * 
-	 */
-	app.put(api + '/projects/:id', function(req, res) {
-	  Project.collaborators(req.params.id, function(err, collaborators) {
-	    if (err) {
-	      throw err;
-	      
+      });
+    });
+  });
+
+  /**
+   * Update project
+   * 
+   */
+  app.put(api + '/projects/:id', function(req, res) {
+    Project.collaborators(req.params.id, function(err, collaborators) {
+      if (err) {
+        throw err;
+        
         res.json(500, err);
-	    }
-	    
-	    if(grant(collaborators, req.user.id)) {
+      }
+      
+      if(grant(collaborators, req.user.id)) {
         Project.update(req.params.id, {
           name: req.body.name,
           description: req.body.description,
@@ -99,17 +99,17 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
             res.json(500, err);
           }
         });
-	    } else {
-	      res.json(401, {msg: 'No access!'});
-	    }
-	  });
-	});
-	
-	/**
-	 * Delete project
-	 * 
-	 */
-	app.del(api + '/projects/:id', function(req, res) {
+      } else {
+        res.json(401, {msg: 'No access!'});
+       }
+    });
+  });
+
+  /**
+   * Delete project
+   * 
+   */
+  app.del(api + '/projects/:id', function(req, res) {
     Project.collaborators(req.params.id, function(err, collaborators) {
       if (err) {
         throw err;
@@ -134,13 +134,13 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
         res.json(401, {msg: 'No access!'});
       }
     });
-	});
-	
-	/**
-	 * Add collaborator
-	 * 
-	 */
-	app.post(api + '/projects/collaborators', function(req, res) {
+  });
+
+  /**
+   * Add collaborator
+   * 
+   */
+  app.post(api + '/projects/collaborators', function(req, res) {
     Project.collaborators(req.body.id, function(err, collaborators) {
       if (err) {
         throw err;
@@ -165,7 +165,7 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
         res.json(401, {msg: 'No access!'});
       }
     }); 
-	});
+  });
 };
 
 module.exports = ProjectsRouter;
