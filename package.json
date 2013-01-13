@@ -16,7 +16,8 @@
     "passport": ">= 0.0.0",
     "passport-local": ">= 0.0.0",
     "colors": "*",
-    "underscore": "*"
+    "underscore": "*",
+    "async": "0.1.x"
   },
   "devDependencies": {
     "mocha": "1.6.0",

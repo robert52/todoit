@@ -43,7 +43,9 @@ describe('Authentication::API'.yellow, function() {
   describe('#User Login'.cyan, function() {
     
     before(function(done) {
-      User.hashPassword(userObj.password, function(password, salt) {
+      User.hashPassword(userObj.password, function(err, password, salt) {
+        if (err) throw err;
+        
         User.create({
           email: userObj.email,
           password: password,

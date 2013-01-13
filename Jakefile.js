@@ -95,7 +95,9 @@ namespace('db', function() {
     log('- db:populate-users'.yellow);
     var User = JK.Models.user;
     
-    User.hashPassword('pass123', function(password, salt) {
+    User.hashPassword('pass123', function(err, password, salt) {
+      if (err) throw err;
+      
       User.create({
         email: 'test@todoit.com',
         password: password,

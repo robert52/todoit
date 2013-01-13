@@ -11,13 +11,15 @@ var root = __dirname + '/../../',
     chai = require('chai'),
     should = chai.should(),
     request = require('request'),
-    api = '/api',
+    async = require('async'),
+    api,
     config,
     db,
     URL,
     ENV;
 
 config = utils.loadConfig();
+api = config['api_url'];
 ENV = process.env.NODE_ENV;
 URL = utils.createBaseUrl(config['host'], config['port'], config['https']);
 
@@ -35,28 +37,46 @@ describe('Project::API'.yellow, function() {
     Project = resourceful.resources.Project;
 
     utils.cleanDb(db, function() {
-      User.hashPassword(mockUser.password, function(password, salt) {
-        User.create({
-          email: mockUser.username[1],
-          password: password,
-          password_salt: salt
-        }, function(err, anotherUser) {
-          if (err) throw err;
+      async.auto({
+        hash_password: function(callback) {
+          User.hashPassword(mockUser.password, function(err, password, salt) {
+            if (err) throw err;
 
-          seconduserId = anotherUser.id
-        });        
-        
-        User.create({
-          email: mockUser.username[0],
-          password: password,
-          password_salt: salt
-        }, function(err, user) {
-          if (err) throw err;
+            callback(null, {
+              password: password,
+              salt: salt
+            });
+          });
+        },
+        create_users: ['hash_password', function(callback, result) {
+          User.create({
+            email: mockUser.username[0],
+            password: result.hash_password.password,
+            password_salt: result.hash_password.salt
+          }, function(err, user) {
+            if (err) throw err;
 
-          userId = user.id;
+            userId = user.id
+            
+            User.create({
+              email: mockUser.username[1],
+              password: result.hash_password.password,
+              password_salt: result.hash_password.salt
+            }, function(err, anotherUser) {
+              if (err) throw err;
 
+              seconduserId = anotherUser.id
+            
+              callback(null, {
+                user_one: user,
+                user_two: anotherUser
+              });
+            });            
+          });
+        }],
+        create_project: ['create_users', function(callback, result) {
           Project.create({
-            owner_id: user.id,
+            owner_id: result.create_users.user_one.id,
             name: 'Test project',
             description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur ornare risus.',
             status: 'active'
@@ -65,16 +85,20 @@ describe('Project::API'.yellow, function() {
             
             projectId = project.id;
             
-            Project.createCollaborator(project.id, {
-              user_id: user.id,
-              access: 'owner'
-            }, function(err, collaborator) {
-              if (err) throw err;
-              
-              done();
-            });
-          });
-        });
+            callback(null, project);
+          });          
+        }],
+        add_collaborator: ['create_project', function(callback, result) {
+          Project.createCollaborator(result.create_project.id, {
+            user_id: userId,
+            access: 'owner'
+          }, function(err, collaborator) {
+            if (err) throw err;
+            
+            callback(null, collaborator);
+            done();
+          });          
+        }]
       });
     });
   });

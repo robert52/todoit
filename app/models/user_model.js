@@ -57,9 +57,11 @@ var UserModel = function(resourceful) {
   User.method('hashPassword', function(password, callback) {
     var salt = makeSalt();
     var hash = encryptPassword(password, salt);
-
-    if (callback)
-      callback(hash, salt);
+    var err = null;
+    
+    if (callback) {
+      callback(err, hash, salt);
+    }
 
     return hash;
   }, {

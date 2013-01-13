@@ -1,9 +1,9 @@
 var ProjectsRouter = function(app, resourceful, config, passport) {
-  var resources = resourceful.resources,
-      User = resources.User,
-      Project = resources.Project,
-      api = config['api-url'],
-      grant = require('../features/grant');
+  var resources = resourceful.resources;
+  var User = resources.User;
+  var Project = resources.Project;
+  var api = config['api-url'];
+  var hasAccess = require('../features/grant');
 
   /**
    * Get all user's projects
@@ -19,7 +19,7 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
       }
     });
   });
-  
+
   /**
    * Get a project by id 
    */
@@ -31,7 +31,7 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
         res.json(500, err);
       }
             
-      if(grant(collaborators, req.user.id)) {
+      if(hasAccess(collaborators, req.user.id)) {
         Project.get(req.params.id, function(err, project) {
           if (!err) {
             res.json(200, project);
@@ -85,7 +85,7 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
         res.json(500, err);
       }
       
-      if(grant(collaborators, req.user.id)) {
+      if(hasAccess(collaborators, req.user.id)) {
         Project.update(req.params.id, {
           name: req.body.name,
           description: req.body.description,
@@ -117,7 +117,7 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
         res.json(500, err);       
       }
       
-      if(grant(collaborators, req.user.id)) {
+      if(hasAccess(collaborators, req.user.id)) {
         Project.destroy(req.params.id, function(err) {
           if (!err) {
             res.json(200, {
@@ -148,7 +148,7 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
         res.json(500, err);
       }
       
-      if(grant(collaborators, req.user.id)) {
+      if(hasAccess(collaborators, req.user.id)) {
         Project.createCollaborator(req.body.id, {
           user_id: req.body.user_id,
           access: req.body.access

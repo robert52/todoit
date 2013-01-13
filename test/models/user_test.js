@@ -87,7 +87,9 @@ describe('User::Model'.yellow, function() {
     // })  });  describe('#Get User'.cyan, function(done) {
     
     it('should return user without password and salt when calling with safeJSON', function(done) {
-      User.hashPassword(values.password, function(password, salt) {
+      User.hashPassword(values.password, function(err, password, salt) {
+        if (err) throw err;
+        
         User.create({
           'email' : values.email,
           'password' : password,
@@ -110,7 +112,9 @@ describe('User::Model'.yellow, function() {
     };
 
     before(function(done) {
-      User.hashPassword(newValues.password, function(password, salt) {
+      User.hashPassword(newValues.password, function(err, password, salt) {
+        if (err) throw err;
+        
         User.create({
           'email' : newValues.email,
           'password' : password,

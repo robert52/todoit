@@ -2,52 +2,85 @@
  * Set the environment to test 
  */
 process.env.NODE_ENV = 'test';
-/*
-var resourceful = require('resourceful'),
-    root = __dirname + '/../../',
+
+var root = __dirname + '/../../',
     utils = require(root + 'lib/utils'),
+    http = require('http'),
+    resourceful = require('resourceful'),
     colors = require('colors'),
     chai = require('chai'),
-    expect = chai.expect,
     should = chai.should(),
     request = require('request'),
-    api = '/api',
-    app = require(root + 'app'),
+    async = require('async'),
+    api,
     config,
+    db,
     URL,
     ENV;
-    
-config = app.config;  
+
+config = utils.loadConfig();
+api = config['api_url'];
 ENV = process.env.NODE_ENV;
-URL = utils.createBaseUrl(config.get('host'), config.get('port'), config.get('https'));
+URL = utils.createBaseUrl(config['host'], config['port'], config['https']);
 
 
-describe('Todos::API'.blue, function() {
-    var config;
-    
-    before(function(done) {
-        utils.cleanDb();
-        done();
-    });
-    
-    describe('#GET'.cyan + api + '/todos', function() {
+describe('Project::API'.yellow, function() {
+  var User, Project, Todo, projectId, userId, seconduserId;
+  var mockUser = {
+    username: ['test@todoit.com', 'bob@todoit.com'],
+    password: 'pass123'
+  };
+  
+  before(function(done) {
+    db = resourceful.connection.connection;
+
+    User = resourceful.resources.User;
+    Project = resourceful.resources.Project;
+    Todo = resourceful.resources.Todo;
+  
+    utils.cleanDb(db, function() {
+      User.hashPassword(mockUser.password, function(password, salt) {
+        User.create({
+          email: mockUser.username[1],
+          password: password,
+          password_salt: salt
+        }, function(err, anotherUser) {
+          if (err) throw err;
+
+          seconduserId = anotherUser.id
+        });        
         
-        it('should get all todos', function(done) {
-            request(URL + api + '/todos', function(err, res, body) {
-                if (err) throw err;
-                
-                res.statusCode.should.equal(200);
-                JSON.parse(body).should.be.an('array');
-                done(); 
+        User.create({
+          email: mockUser.username[0],
+          password: password,
+          password_salt: salt
+        }, function(err, user) {
+          if (err) throw err;
+
+          userId = user.id;
+
+          Project.create({
+            owner_id: user.id,
+            name: 'Test project',
+            description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur ornare risus.',
+            status: 'active'
+          }, function(err, project) {
+            if (err) throw err;
+            
+            projectId = project.id;
+            
+            Project.createCollaborator(project.id, {
+              user_id: user.id,
+              access: 'owner'
+            }, function(err, collaborator) {
+              if (err) throw err;
+              
+              done();
             });
+          });
         });
+      });
     });
-    
-    describe('#GET'.cyan + api + '/todos/:id', function() {
-        
-        it('should get a todo by id', function(done) {
-            done(); 
-        });
-    });
+  });
+  
 });
-*/
