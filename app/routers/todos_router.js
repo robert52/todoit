@@ -64,7 +64,7 @@ var TodosRouter = function(app, resourceful, config) {
       console.log(results);
       if (!err) {
         res.json(200, results.get_todo);
-      } else if (err & err.name === 'NoAccessError') {
+      } else if (err && err.name === 'NoAccessError') {
         res.json(401, {msg: 'You do not have access.'});
       } else {
         res.json(500, {msg: 'Something went wrong.'});

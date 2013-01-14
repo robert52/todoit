@@ -109,7 +109,7 @@ describe('Todo::API'.yellow, function() {
             assignee_id: result.add_collaborator.id
           }, function(err, todo) {
             if (err) throw err;
-            
+            console.log(todo.id)
             todoId = todo.id;
             
             callback(null, todo);
