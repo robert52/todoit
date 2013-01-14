@@ -3,8 +3,8 @@ var ProjectsRouter = function(app, resourceful, config, passport) {
   var User = resources.User;
   var Project = resources.Project;
   var api = config['api-url'];
-  var hasAccess = require('../features/grant');
-
+  var grant = require('../features/grant');
+  var hasAccess = grant.hasAccess;
   /**
    * Get all user's projects
    */

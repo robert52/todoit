@@ -22,9 +22,6 @@ var TodoModel = function(resourceful) {
   Todo.bool('completed', {
     required : true
   });
-  Todo.number('order', {
-    required : true
-  });
   Todo.string('description');
   Todo.string('assignee_id');
 
