@@ -1,30 +1,34 @@
-var express = require('express'),
-    http = require('http'),
-    resourceful = require('resourceful'), 
-    path = require('path'), 
-    passport = require('passport'), 
-    LocalStrategy = require('passport-local').Strategy,  
-    app = express(), 
-    ENV = process.env.NODE_ENV || 'development', 
-    colors = require('colors'),
-    resources = {},
-    utils = require('./lib/utils'),
-    config = utils.loadConfig(),
-    EventEmitter = require('events').EventEmitter,
-    AppEmitter = new EventEmitter(),
-    appStarter,
-    server;
+/**
+ * get environment type 
+ */
+var ENV = process.env.NODE_ENV || 'development';
+
+var path = require('path');
+var express = require('express');
+var http = require('http');
+var jugglingdb = require('jugglingdb');
+var Schema = jugglingdb.Schema;
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;  
+var colors = require('colors');
+var app = express();
+var utils = require('./lib/utils');
+var config = utils.loadConfig();
+var EventEmitter = require('events').EventEmitter;
+var AppEmitter = new EventEmitter();
+var appStarter;
+var server;
 
 /**
  * Storage engine
  */
-resourceful.use( config.storage.engine, { database: config.storage.database });
+var schema = new Schema('nano', {port: 5984, url: 'http://localhost:5984/juggling_db'});
 
 /**
  * Registering models
  */
 ['user', 'project', 'collaborator', 'todo'].forEach(function(model) {
-  resources[model] = require('./app/models/' + model + '_model')(resourceful);
+  require('./app/models/' + model + '_model')(schema);
 });
 
 /**
@@ -35,14 +39,14 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(id, done) {
-  resources.user.get(id, function(err, user) {
+  schema.models.User.find(id, function(err, user) {
     done(err, user);     
   });
 });
 
 passport.use('local', new LocalStrategy(function(username, password, done) {
   process.nextTick(function() {
-    resources.user.checkCredentials(username, password, function(err, user) {
+    schema.models.User.checkCredentials(username, password, function(err, user) {
       if (err) { return done(err); }
       if (!user) { return done(null, false, {message: 'Unknown user ' + username}); }
       
@@ -72,7 +76,7 @@ app.configure(function() {
  * Registering routers
  */
 ['main', ,'projects', 'todos'].forEach(function(router) {
-  require('./app/routers/' + router + '_router')(app, resourceful, config, passport);
+  require('./app/routers/' + router + '_router')(app, schema, config, passport);
 });
 
 /**

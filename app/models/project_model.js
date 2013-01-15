@@ -1,18 +1,12 @@
-var ProjectModel = function(resourceful) {
+var ProjectModel = function(schema) {
 
-  var Project = resourceful.define('project');
-
-  Project.string('name', {
-    required : true
+  var Project = schema.define('Project', {
+    name: { type: String },
+    owner_id: { type: String },
+    description: { type: String },
+    status: { type: String }    
   });
-  Project.string('owner_id', {
-    required : true
-  });
-  Project.string('description');
-  Project.string('status');
-
-  Project.timestamps();
-
+  
   return Project;
 };
 

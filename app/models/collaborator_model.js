@@ -1,13 +1,11 @@
-var CollaboratorModel = function(resourceful) {
+var CollaboratorModel = function(schema) {
+  var Project = schema.models.Project;
+  var Collaborator = schema.define('Collaborator', {
+    user_id: { type: String },
+    access: { type: String }
+  });
 
-  var Collaborator = resourceful.define('collaborator');
-
-  Collaborator.parent('Project');
-  
-  Collaborator.string('user_id', {required: true});
-  Collaborator.string('access');
-
-  Collaborator.timestamps();
+  Collaborator.belongsTo(Project, {as: 'project', foreignKey: 'project_id'});
 
   return Collaborator;
 };

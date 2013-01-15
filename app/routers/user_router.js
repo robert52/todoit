@@ -1,4 +1,4 @@
-var UserRouter = function(app, resourceful, plates, config) {
+var UserRouter = function(app, schema, plates, config) {
   var resources = resourceful.resources,
       api = app.config.get('api-url');
 
