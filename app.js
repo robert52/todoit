@@ -22,12 +22,12 @@ var server;
 /**
  * Storage engine
  */
-var schema = new Schema('nano', {port: 5984, url: 'http://localhost:5984/juggling_db'});
+var schema = new Schema('nano', {port: 5984, url: 'http://localhost:5984/todos_test_db'});
 
 /**
  * Registering models
  */
-['user', 'project', 'collaborator', 'todo'].forEach(function(model) {
+['user', 'project', 'collaborator'].forEach(function(model) {
   require('./app/models/' + model + '_model')(schema);
 });
 
@@ -75,7 +75,7 @@ app.configure(function() {
 /**
  * Registering routers
  */
-['main', ,'projects', 'todos'].forEach(function(router) {
+['main', 'projects'].forEach(function(router) {
   require('./app/routers/' + router + '_router')(app, schema, config, passport);
 });
 

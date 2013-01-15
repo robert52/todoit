@@ -3,20 +3,27 @@
  */
 process.env.NODE_ENV = 'test';
 
-var root = __dirname + '/../../',
-    utils = require(root + 'lib/utils'),
-    http = require('http'),
-    resourceful = require('resourceful'),
-    colors = require('colors'),
-    chai = require('chai'),
-    should = chai.should(),
-    request = require('request'),
-    async = require('async'),
-    api,
-    config,
-    db,
-    URL,
-    ENV;
+var root = __dirname + '/../../';
+var utils = require(root + 'lib/utils');
+var http = require('http');
+var resourceful = require('resourceful');
+var colors = require('colors');
+var chai = require('chai');
+var should = chai.should();
+var request = require('request');
+var async = require('async');
+var jugglingdb = require('jugglingdb');
+var Schema = jugglingdb.Schema;
+var api;
+var config;
+var db;
+var URL;
+var ENV;
+
+var schema = new Schema('nano', {port: 5984, url: 'http://localhost:5984/todos_test_db'});
+var User = require(root + 'app/models/user_model')(schema);
+var Project = require(root + 'app/models/project_model')(schema);
+var Collaborator = require(root + 'app/models/collaborator_model')(schema);
 
 config = utils.loadConfig();
 api = config['api_url'];
@@ -24,19 +31,14 @@ ENV = process.env.NODE_ENV;
 URL = utils.createBaseUrl(config['host'], config['port'], config['https']);
 
 describe('Project::API'.yellow, function() {
-  var User, Project, projectId, userId, seconduserId;
+  var projectId, userId, seconduserId;
   var mockUser = {
     username: ['test@todoit.com', 'bob@todoit.com'],
     password: 'pass123'
   };
   
   before(function(done) {
-    db = resourceful.connection.connection;
-
-    User = resourceful.resources.User;
-    Project = resourceful.resources.Project;
-
-    utils.cleanDb(db, function() {
+    utils.cleanDb([User, Project, Collaborator], function() {
       async.auto({
         hash_password: function(callback) {
           User.hashPassword(mockUser.password, function(err, password, salt) {
@@ -89,7 +91,7 @@ describe('Project::API'.yellow, function() {
           });          
         }],
         add_collaborator: ['create_project', function(callback, result) {
-          Project.createCollaborator(result.create_project.id, {
+          Collaborator.create({
             user_id: userId,
             access: 'owner'
           }, function(err, collaborator) {
@@ -104,7 +106,7 @@ describe('Project::API'.yellow, function() {
   });
   
   after(function(done) {
-    utils.cleanDb(db, done);
+    utils.cleanDb([User, Project, Collaborators], done);
   });
   
   describe('#Unauthorized access'.cyan, function() {

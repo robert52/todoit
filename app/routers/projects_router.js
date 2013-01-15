@@ -43,6 +43,9 @@ var ProjectsRouter = function(app, schema, config, passport) {
         });
       }      
     }, function(err, results) {
+      console.log('getting project by id');
+      console.log(err);
+      console.log(results);
       if (!err) {
         res.json(200, result.get_project);
       } else if (err && err.name === 'NoAccessError') {
