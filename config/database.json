@@ -1,0 +1,14 @@
+{
+  "development" : {
+    "driver" : "nano",
+    "url" : "http://localhost:5984/todos_dev_db"
+  },
+  "test" : {
+    "driver" : "nano",
+    "url" : "http://localhost:5984/todos_test_db"    
+  },
+  "production" : {
+    "driver" : "nano",
+    "url" : "http://localhost:5984/todos_db"  
+  }
+}

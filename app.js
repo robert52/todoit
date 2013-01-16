@@ -6,8 +6,6 @@ var ENV = process.env.NODE_ENV || 'development';
 var path = require('path');
 var express = require('express');
 var http = require('http');
-var jugglingdb = require('jugglingdb');
-var Schema = jugglingdb.Schema;
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;  
 var colors = require('colors');
@@ -19,16 +17,15 @@ var AppEmitter = new EventEmitter();
 var appStarter;
 var server;
 
-/**
- * Storage engine
- */
-var schema = new Schema('nano', {port: 5984, url: 'http://localhost:5984/todos_test_db'});
+app.set('env', ENV);
 
+require('./config/jugglingdb').init(app);
+var models = app.get('models');
 /**
  * Registering models
  */
 ['user', 'project', 'collaborator'].forEach(function(model) {
-  require('./app/models/' + model + '_model')(schema);
+  require('./app/models/' + model + '_model')(app);
 });
 
 /**
@@ -39,14 +36,14 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(id, done) {
-  schema.models.User.find(id, function(err, user) {
+  models.User.find(id, function(err, user) {
     done(err, user);     
   });
 });
 
 passport.use('local', new LocalStrategy(function(username, password, done) {
   process.nextTick(function() {
-    schema.models.User.checkCredentials(username, password, function(err, user) {
+    models.User.checkCredentials(username, password, function(err, user) {
       if (err) { return done(err); }
       if (!user) { return done(null, false, {message: 'Unknown user ' + username}); }
       
@@ -76,7 +73,7 @@ app.configure(function() {
  * Registering routers
  */
 ['main', 'projects'].forEach(function(router) {
-  require('./app/routers/' + router + '_router')(app, schema, config, passport);
+  require('./app/routers/' + router + '_router')(app, config, passport);
 });
 
 /**

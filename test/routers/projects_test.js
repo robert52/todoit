@@ -6,107 +6,115 @@ process.env.NODE_ENV = 'test';
 var root = __dirname + '/../../';
 var utils = require(root + 'lib/utils');
 var http = require('http');
-var resourceful = require('resourceful');
 var colors = require('colors');
 var chai = require('chai');
 var should = chai.should();
 var request = require('request');
 var async = require('async');
-var jugglingdb = require('jugglingdb');
-var Schema = jugglingdb.Schema;
 var api;
 var config;
 var db;
 var URL;
-var ENV;
-
-var schema = new Schema('nano', {port: 5984, url: 'http://localhost:5984/todos_test_db'});
-var User = require(root + 'app/models/user_model')(schema);
-var Project = require(root + 'app/models/project_model')(schema);
-var Collaborator = require(root + 'app/models/collaborator_model')(schema);
+var ENV = process.env.NODE_ENV;
+/**
+ * Require app
+ */
+var appServer;
+var app = require(root + 'app');
 
 config = utils.loadConfig();
 api = config['api_url'];
-ENV = process.env.NODE_ENV;
 URL = utils.createBaseUrl(config['host'], config['port'], config['https']);
 
 describe('Project::API'.yellow, function() {
-  var projectId, userId, seconduserId;
+  var models, User, Project, Collaborator, projectId, userId, seconduserId;
   var mockUser = {
     username: ['test@todoit.com', 'bob@todoit.com'],
     password: 'pass123'
   };
   
   before(function(done) {
-    utils.cleanDb([User, Project, Collaborator], function() {
-      async.auto({
-        hash_password: function(callback) {
-          User.hashPassword(mockUser.password, function(err, password, salt) {
-            if (err) throw err;
-
-            callback(null, {
-              password: password,
-              salt: salt
+    models = app.get('models');
+    User = models.User;
+    Project = models.Project;
+    Collaborator = models.Collaborator;
+ 
+    appServer = http.createServer(app);
+    appServer.on('listening', function() {
+      utils.cleanDb([User, Project, Collaborator], function() {
+        async.auto({
+          hash_password: function(callback) {
+            User.hashPassword(mockUser.password, function(err, password, salt) {
+              callback(err, {
+                password: password,
+                salt: salt
+              });
             });
-          });
-        },
-        create_users: ['hash_password', function(callback, result) {
-          User.create({
-            email: mockUser.username[0],
-            password: result.hash_password.password,
-            password_salt: result.hash_password.salt
-          }, function(err, user) {
-            if (err) throw err;
-
-            userId = user.id
-            
+          },
+          create_users: ['hash_password', function(callback, result) {
             User.create({
-              email: mockUser.username[1],
+              email: mockUser.username[0],
               password: result.hash_password.password,
               password_salt: result.hash_password.salt
-            }, function(err, anotherUser) {
+            }, function(err, user) {
               if (err) throw err;
-
-              seconduserId = anotherUser.id
-            
-              callback(null, {
-                user_one: user,
-                user_two: anotherUser
-              });
-            });            
-          });
-        }],
-        create_project: ['create_users', function(callback, result) {
-          Project.create({
-            owner_id: result.create_users.user_one.id,
-            name: 'Test project',
-            description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur ornare risus.',
-            status: 'active'
-          }, function(err, project) {
-            if (err) throw err;
-            
-            projectId = project.id;
-            
-            callback(null, project);
-          });          
-        }],
-        add_collaborator: ['create_project', function(callback, result) {
-          Collaborator.create({
-            user_id: userId,
-            access: 'owner'
-          }, function(err, collaborator) {
-            if (err) throw err;
-            
-            callback(null, collaborator);
-            done();
-          });          
-        }]
+  
+              userId = user.id
+              
+              User.create({
+                email: mockUser.username[1],
+                password: result.hash_password.password,
+                password_salt: result.hash_password.salt
+              }, function(err, anotherUser) {
+                seconduserId = anotherUser.id
+              
+                callback(err, {
+                  user_one: user,
+                  user_two: anotherUser
+                });
+              });            
+            });
+          }],
+          create_project: ['create_users', function(callback, result) {
+            Project.create({
+              owner_id: result.create_users.user_one.id,
+              name: 'Test project',
+              description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur ornare risus.',
+              status: 'active'
+            }, function(err, project) {
+              projectId = project.id;
+              
+              callback(err, project);
+            });          
+          }],
+          add_collaborator: ['create_project', function(callback, results) {
+            results.create_project.collaborators.create({
+              user_id: userId,
+              access: 'owner'  
+            }, function(err, collaborator) {
+              if (err) throw err;
+              
+              callback(err, collaborator);
+            })
+          }]
+        }, function(err, results) {
+          if (err) throw err;
+          
+          done();
+        });
       });
     });
+    
+    appServer.listen(config.port);  
   });
   
   after(function(done) {
-    utils.cleanDb([User, Project, Collaborators], done);
+    appServer.on('close', function() {
+      setTimeout(done, 500);
+    });
+    utils.cleanDb([User, Project, Collaborator], function() {
+      appServer.close();
+    });
   });
   
   describe('#Unauthorized access'.cyan, function() {
@@ -293,7 +301,7 @@ describe('Project::API'.yellow, function() {
       }, function(err, res, body) {
         if (err) throw err;
         
-        res.statusCode.should.equal(200);
+        res.statusCode.should.equal(204);
         
         done();
       });

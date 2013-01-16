@@ -14,6 +14,7 @@ JK.abortIfProduction = function() {
 
 task('init', [], function() {
   JK.utils = JK.utils || require('./lib/utils');
+  
   log(('- environment: ' + ENV).cyan);
   //load config only once
   if (!JK.config) {
@@ -28,7 +29,13 @@ namespace('db', function() {
   desc('Connect to database');
   task('connect', ['init'], function() {
     var me = this;
-
+    JK.db = {};
+    JK.db.conf = JK.db.conf || require('./config/database.json')[ENV];
+    var jugglingdb = require('jugglingdb');
+    var Schema = jugglingdb.Schema;
+    var schema = new Schema(JK.db.conf.driver, {url: JK.db.conf.url});
+    JK.schema = JK.schema || require('./db/schema')(schema, Schema);
+    
     log('- db:connect'.yellow);
     resourceful.use(JK.config.storage.engine, {
       database : JK.config.storage.database
@@ -42,17 +49,18 @@ namespace('db', function() {
     if (!JK.Models) {
       JK.Models = {};
 
-      ['user', 'project', 'collaborator', 'todo'].forEach(function(model) {
-        JK.Models[model] = require('./app/models/' + model + '_model')(resourceful);
+      ['user', 'project', 'collaborator'].forEach(function(model) {
+        JK.Models[model] = require('./app/models/' + model + '_model')(JK.schema);
       });
     }
     log(' loaded models'.green);
   })
   
   desc('Empty database')
-  task('empty', ['connect'], function() {
+  task('empty', ['connect', 'loadModels'], function() {
+    var models = JK.schema.models;
 
-    JK.utils.cleanDb(db, function() {
+    JK.utils.cleanDb(models, function() {
       log(' emptied database'.green);
       complete();
     });
@@ -127,6 +135,7 @@ namespace('db', function() {
     
     var User = JK.Models.user,
         Project = JK.Models.project,
+        Collaborator = JK.Models.collaborator,
         userId = null;
 
     count = count || 5;
@@ -145,21 +154,30 @@ namespace('db', function() {
       }, function(err, project) {
         if (err) throw err;
         
-        Project.createCollaborator(project.id, {
+        project.collaborators.create({
           user_id: userId,
-          access: 'owner'
+          access: 'owner'          
         }, function(err, collaborator) {
           if (err) throw err;
           
           nr--;
-          log(nr);
-          populate(nr);
+          populate(nr);          
         });
+        // Collaborator.create({
+          // project_id: project.id,
+          // user_id: userId,
+          // access: 'owner'
+        // }, function(err, collaborator) {
+          // if (err) throw err;
+//           
+          // nr--;
+          // populate(nr);
+        // });
       });
     };
 
-    User.find({'email': 'test@todoit.com'}, function(err, result) {
-      userId = result[0].id;
+    User.findOne({ where : {'email': 'test@todoit.com'} }, function(err, result) {
+      userId = result.id;
       if (!err) populate(count);
     });
     

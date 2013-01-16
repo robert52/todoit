@@ -1,5 +1,5 @@
 var TodoModel = function(schema) {
-  var Project = schema.models.Project;
+  var Project = app.get('models').Project;
   var Todo = schema.define('Todo', {
     title : { 
       type: String

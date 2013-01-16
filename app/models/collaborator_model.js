@@ -1,11 +1,13 @@
-var CollaboratorModel = function(schema) {
-  var Project = schema.models.Project;
-  var Collaborator = schema.define('Collaborator', {
-    user_id: { type: String },
-    access: { type: String }
-  });
+var CollaboratorModel = function(app) {
+  var Collaborator = (app.models) ? app.models.Collaborator : app.get('models').Collaborator;
+  
+  // var Project = app.models.Project;
+  // var Collaborator = schema.define('Collaborator', {
+    // user_id: { type: String },
+    // access: { type: String }
+  // });
 
-  Collaborator.belongsTo(Project, {as: 'project', foreignKey: 'project_id'});
+  
 
   return Collaborator;
 };

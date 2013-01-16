@@ -5,7 +5,7 @@ function ensureAuthenticated(req, res, next) {
 
 var MainRouter;
 
-MainRouter = function(app, resourceful, config, passport) {
+MainRouter = function(app, config, passport) {
   /**
    * Authenticating user
    */

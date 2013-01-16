@@ -1,7 +1,8 @@
-var ProjectsRouter = function(app, schema, config, passport) {
-  var User = schema.models.User;
-  var Project = schema.models.Project;
-  var Collaborator = schema.models.Collaborator
+var ProjectsRouter = function(app, config, passport) {
+  var models = app.get('models');
+  var User = models.User;
+  var Project = models.Project;
+  var Collaborator = models.Collaborator
   var api = config['api-url'];
   var async = require('async');
   var grant = require('../features/grant');
@@ -29,11 +30,11 @@ var ProjectsRouter = function(app, schema, config, passport) {
   app.get(api + '/projects/:id', function(req, res) {
     async.series({
       check_access: function(callback) {
-        Project.collaborators(req.params.id, function(err, collaborators) {
+        Collaborator.all({where: {'project_id' : req.params.id} }, function(err, collaborators) {
           if (!err && !hasAccess(collaborators, req.user.id)) {
             err = new NoAccessError('No Access!');
           }
-          
+
           callback(err, 'done');
         });
       },
@@ -43,11 +44,8 @@ var ProjectsRouter = function(app, schema, config, passport) {
         });
       }      
     }, function(err, results) {
-      console.log('getting project by id');
-      console.log(err);
-      console.log(results);
       if (!err) {
-        res.json(200, result.get_project);
+        res.json(200, results.get_project);
       } else if (err && err.name === 'NoAccessError') {
         res.json(401, {msg: 'You do not have access.'});
       } else {
@@ -112,7 +110,7 @@ var ProjectsRouter = function(app, schema, config, passport) {
   app.put(api + '/projects/:id', function(req, res) {
     async.auto({
       check_access: function(callback) {
-        Project.collaborators(req.params.id, function(err, collaborators) {
+        Collaborator.all({where: {'project_id' : req.params.id} }, function(err, collaborators) {
           if (!err && !hasAccess(collaborators, req.user.id)) {
             err = new NoAccessError('No Access!');
           }
@@ -136,7 +134,7 @@ var ProjectsRouter = function(app, schema, config, passport) {
       }]
     }, function(err, results) {
       if (!err) {
-        res.json(200, result.update_project);
+        res.json(200, results.update_project);
       } else if (err && err.name === 'NoAccessError') {
         res.json(401, {msg: 'You do not have access.'});
       } else {
@@ -178,11 +176,12 @@ var ProjectsRouter = function(app, schema, config, passport) {
   app.del(api + '/projects/:id', function(req, res) {
     async.auto({
       check_access: function(callback) {
-        Project.collaborators(req.params.id, function(err, collaborators) {
+        Collaborator.all({where: {'project_id' : req.params.id} }, function(err, collaborators) {
+          
           if (!err && !hasAccess(collaborators, req.user.id)) {
             err = new NoAccessError('No Access!');
           }
-          
+
           callback(err, 'done');
         });
       },
@@ -203,33 +202,33 @@ var ProjectsRouter = function(app, schema, config, passport) {
         res.json(401, {msg: 'You do not have access.'});
       } else {
         res.json(500, {msg: 'Something went wrong.'});
-      }      
+      }       
     });
     
-    Project.collaborators(req.params.id, function(err, collaborators) {
-      if (err) {
-        throw err;
-        
-        res.json(500, err);       
-      }
-      
-      if(hasAccess(collaborators, req.user.id)) {
-        Project.destroy(req.params.id, function(err) {
-          if (!err) {
-            res.json(200, {
-              status: 'ok',
-              msg: 'resource deleted successfully'
-            });
-          } else {
-            throw err;
-            
-            res.json(500, err);
-          }
-        });
-      } else {
-        res.json(401, {msg: 'No access!'});
-      }
-    });
+    // Project.collaborators(req.params.id, function(err, collaborators) {
+      // if (err) {
+        // throw err;
+//         
+        // res.json(500, err);       
+      // }
+//       
+      // if(hasAccess(collaborators, req.user.id)) {
+        // Project.destroy(req.params.id, function(err) {
+          // if (!err) {
+            // res.json(200, {
+              // status: 'ok',
+              // msg: 'resource deleted successfully'
+            // });
+          // } else {
+            // throw err;
+//             
+            // res.json(500, err);
+          // }
+        // });
+      // } else {
+        // res.json(401, {msg: 'No access!'});
+      // }
+    // });
   });
 
   /**
@@ -237,30 +236,64 @@ var ProjectsRouter = function(app, schema, config, passport) {
    * 
    */
   app.post(api + '/projects/collaborators', function(req, res) {
-    Project.collaborators(req.body.id, function(err, collaborators) {
-      if (err) {
-        throw err;
-        
-        res.json(500, err);
-      }
-      
-      if(hasAccess(collaborators, req.user.id)) {
-        Project.createCollaborator(req.body.id, {
-          user_id: req.body.user_id,
-          access: req.body.access
-        }, function(err, collaborator) {
-          if (!err) {
-            res.json(201, collaborator);
-          } else {
-            throw err;
-            
-            res.json(500, err);
-          }  
+    async.auto({
+      check_access: function(callback) {
+        Collaborator.all({where: {'project_id' : req.body.id} }, function(err, collaborators) {
+          
+          if (!err && !hasAccess(collaborators, req.user.id)) {
+            err = new NoAccessError('No Access!');
+          }
+
+          callback(err, 'done');
         });
+      },
+      get_project: ['check_access', function(callback, results) {
+        Project.find(req.body.id, function(err, project) {
+          callback(err, project);
+        });
+      }],
+      add_collaborator: ['get_project', function(callback, results) {
+        results.get_project.collaborators.create({
+          user_id: req.body.user_id,
+          access: req.body.access          
+        }, function(err, collaborator) {
+          callback(err, collaborator);
+        });
+      }]
+    }, function(err, results) {
+      if (!err) {
+        res.json(201, results.add_collaborator);
+      } else if (err && err.name === 'NoAccessError') {
+        res.json(401, {msg: 'You do not have access.'});
       } else {
-        res.json(401, {msg: 'No access!'});
-      }
-    }); 
+        res.json(500, {msg: 'Something went wrong.'});
+      }       
+    });
+        
+    // Project.collaborators(req.body.id, function(err, collaborators) {
+      // if (err) {
+        // throw err;
+//         
+        // res.json(500, err);
+      // }
+//       
+      // if(hasAccess(collaborators, req.user.id)) {
+        // Project.createCollaborator(req.body.id, {
+          // user_id: req.body.user_id,
+          // access: req.body.access
+        // }, function(err, collaborator) {
+          // if (!err) {
+            // res.json(201, collaborator);
+          // } else {
+            // throw err;
+//             
+            // res.json(500, err);
+          // }  
+        // });
+      // } else {
+        // res.json(401, {msg: 'No access!'});
+      // }
+    // });
   });
 };
 
