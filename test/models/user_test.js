@@ -9,6 +9,7 @@ var http = require('http');
 var colors = require('colors');
 var chai = require('chai');
 var should = chai.should();
+var expect = chai.expect;
 var request = require('request');
 var async = require('async');
 var api;
@@ -54,17 +55,47 @@ describe('User::Model'.yellow, function() {
     });
   });
 
-  // describe('#Create User'.cyan, function() {
-    // it('should not create for an invalid email', function(done) {
-      // var newUser = User.create({
-        // email : 'john.doe@todos',
-        // password : 'john!2345'
-      // }, function(err, result) {
-        // err.validate.errors[0].property.should.equal('email');
-        // done();
-      // });
-    // });
-  // });
+  describe('#Create User'.cyan, function() {
+    it('should not create for an invalid email', function(done) {
+      var newUser = User.create({
+        email : 'john.doe@todos',
+        password : 'john!2345'
+      }, function(err, result) {
+        err.should.not.equal(null);
+        done();
+      });
+    });
+    
+    it('should not create if an email exists', function(done) {
+      async.series({
+        create_ok: function(callback) {
+          User.create({
+            email : 'john.doe@todos.com',
+            password : 'john!2345',
+            password_salt: '1234'
+          }, function(err, result) {
+            //err.should.equal(null);
+            expect(err).to.equal(null);
+            callback(err, result);
+          });          
+        },
+        create_fail: function(callback) {
+          User.create({
+            email : 'john.doe@todos.com',
+            password : 'john!2345',
+            password_salt: '1234'
+          }, function(err, result) {
+            expect(err).to.not.equal(null);
+            expect(err.message).to.equal('Validation error');
+
+            callback(err, result);
+          });          
+        }
+      }, function(err, results) {
+        done();
+      });
+    });
+  });
 
   describe('#Check User credentials'.cyan, function() {
     before(function(done) {
