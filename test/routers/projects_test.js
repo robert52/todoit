@@ -23,7 +23,7 @@ var appServer;
 var app = require(root + 'app');
 
 config = utils.loadConfig();
-api = config['api_url'];
+api = config['api-url'];
 URL = utils.createBaseUrl(config['host'], config['port'], config['https']);
 
 describe('Project::API'.yellow, function() {
@@ -38,7 +38,7 @@ describe('Project::API'.yellow, function() {
     User = models.User;
     Project = models.Project;
     Collaborator = models.Collaborator;
- 
+    
     appServer = http.createServer(app);
     appServer.on('listening', function() {
       utils.cleanDb([User, Project, Collaborator], function() {
@@ -105,7 +105,7 @@ describe('Project::API'.yellow, function() {
       });
     });
     
-    appServer.listen(config.port);  
+    appServer.listen(config.port); 
   });
   
   after(function(done) {

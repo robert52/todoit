@@ -24,7 +24,7 @@ var models = app.get('models');
 /**
  * Registering models
  */
-['user', 'project', 'collaborator'].forEach(function(model) {
+['user', 'project', 'collaborator', 'todo'].forEach(function(model) {
   require('./app/models/' + model + '_model')(app);
 });
 
@@ -72,7 +72,7 @@ app.configure(function() {
 /**
  * Registering routers
  */
-['main', 'projects'].forEach(function(router) {
+['main', 'projects', 'todos'].forEach(function(router) {
   require('./app/routers/' + router + '_router')(app, config, passport);
 });
 

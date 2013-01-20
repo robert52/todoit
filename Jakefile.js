@@ -139,7 +139,6 @@ namespace('db', function() {
         userId = null;
 
     count = count || 5;
-    log(count);
     var populate = function(nr) {
       if (nr === 0) {
         log((' populated with projects ' + ENV + ' database').green);
@@ -163,16 +162,6 @@ namespace('db', function() {
           nr--;
           populate(nr);          
         });
-        // Collaborator.create({
-          // project_id: project.id,
-          // user_id: userId,
-          // access: 'owner'
-        // }, function(err, collaborator) {
-          // if (err) throw err;
-//           
-          // nr--;
-          // populate(nr);
-        // });
       });
     };
 
@@ -185,52 +174,57 @@ namespace('db', function() {
   
   desc('Add todos')
   task('populate-todos', ['connect', 'loadModels'], function(count) {
+    log('- db:populate-todos'.yellow);
+    
     var User = JK.Models.user,
         Project = JK.Models.project,
-        projectId = null;
+        Collaborator = JK.Models.collaborator,
+        userId = null,
+        projectInst = null;
 
     count = count || 5;
-
     var populate = function(nr) {
       if (nr === 0) {
-        log((' populated with projects' + ENV + ' database').green);
+        log((' populated with todos ' + ENV + ' database').green);
         process.exit(0);
       }
-  
-      Project.createTodo(projectId, {
-        title : faker.Lorem.sentence(),
-        order : faker.Helpers.randomNumber(10),
-        completed : faker.Helpers.randomize([false, true])
-      }, function(err, result) {
-        if (err)
-          throw err;
-        
-        nr--;
-  
-        process.nextTick(function() {
-          populate(nr);
-        });
-      });    
+      
+      projectInst.todos.create({
+        title: faker.Lorem.sentence(),
+        assignee_id: userId
+      }, function(err, todo) {
+        if (err) throw err;
+
+        nr--;        
+        populate(nr);
+      });
     };
 
-    User.find({'email': 'test@todoit.com'}, function(err, result) {
-      if (!err) {
-        User.createProject(result[0].id, {
-          name: faker.Company.companyName(),
-          description: faker.Lorem.sentence(),
-          status: faker.Helpers.randomize(['active', 'inactive']),
-          collaborators: []
-        }, function(err, project) {
-          if (err)
-            throw err;
-            
-            projectId = project.id;
-            
-            populate(count);
-            
+    User.findOne({ where : {'email': 'test@todoit.com'} }, function(err, result) {
+      userId = result.id;
+      if (err) throw err;
+      
+      Project.create({
+        owner_id: userId,
+        name: faker.Company.companyName(),
+        description: faker.Lorem.sentence(),
+        status: faker.Helpers.randomize(['active', 'inactive'])
+      }, function(err, project) {
+        if (err) throw err;
+        
+        projectInst = project;
+        
+        project.collaborators.create({
+          user_id: userId,
+          access: 'owner'          
+        }, function(err, collaborator) {
+          if (err) throw err;
+          
+          populate(count);          
         });
-      }        
+      });      
     });
+
   });  
   
 });

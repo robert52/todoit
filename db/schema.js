@@ -7,7 +7,7 @@ module.exports = function(schema, Schema, app) {
     password_salt: { type: String },
     password: { type: String }    
   });
-  
+
   /**
    * Define person schema 
    */
@@ -17,6 +17,7 @@ module.exports = function(schema, Schema, app) {
     description: { type: Schema.Text },
     status: { type: String }    
   });
+
   /**
    * Define collaborator schema
    */
@@ -24,13 +25,23 @@ module.exports = function(schema, Schema, app) {
     user_id: { type: String },
     access: { type: String }
   });
-  
+
+  /**
+   * Define todo schema
+   */
+  var Todo = schema.define('Todo', {
+    title: { type: String },
+    assignee_id: { type: String },
+    completed: { type: Boolean, default: false }
+  });
   
   /**
    * Define relationships
    */
   Project.hasMany(Collaborator, {as: 'collaborators', foreignKey: 'project_id'});
+  Project.hasMany(Todo, {as: 'todos', foreignKey: 'project_id'});
   Collaborator.belongsTo(Project, {as: 'project', foreignKey: 'project_id'});
+  Todo.belongsTo(Project, {as: 'project', foreignKey: 'project_id'});
   
   /**
    * Attach schemas to app
